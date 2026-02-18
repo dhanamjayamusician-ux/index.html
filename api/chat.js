@@ -1,32 +1,22 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-exports.handler = async (event) => {
-    try {
-        // 1. Get the user message
-        const body = JSON.parse(event.body);
-        const userMsg = body.message;
+module.exports = async (req, res) => {
+    // Vercel uses req.method instead of event.httpMethod
+    if (req.method !== 'POST') {
+        return res.status(405).send('Method Not Allowed');
+    }
 
-        // 2. Initialize the AI (The part that was missing!)
+    try {
+        const { message } = req.body;
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        
-        // 3. Select the model
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        // 4. Generate the response
-        const result = await model.generateContent(userMsg);
+        const result = await model.generateContent(message);
         const response = await result.response;
-        const aiText = response.text();
-
-        return {
-            statusCode: 200,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reply: aiText }),
-        };
+        
+        return res.status(200).json({ reply: response.text() });
     } catch (error) {
-        console.error("Final Error Log:", error);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ reply: "I'm awake, but I hit an error: " + error.message }),
-        };
+        console.error(error);
+        return res.status(500).json({ error: error.message });
     }
 };
