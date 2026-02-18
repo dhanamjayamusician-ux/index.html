@@ -1,4 +1,4 @@
-const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 exports.handler = async (event) => {
     try {
